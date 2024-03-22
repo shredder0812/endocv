@@ -1,0 +1,156 @@
+from ultralytics import YOLO
+from pathlib import Path
+from time import perf_counter
+import cv2
+import numpy as np
+import torch
+from boxmot import (OCSORT, BoTSORT, BYTETracker, DeepOCSORT, StrongSORT, create_tracker, get_tracker_config)
+from pathlib import Path
+import sys
+import datetime
+import pandas as pd
+from google.colab.patches import cv2_imshow
+
+class Colors:
+    def __init__(self, num_colors=80):
+        self.num_colors = num_colors
+        self.color_palette = self.generate_color_palette()
+
+
+    def generate_color_palette(self):
+        hsv_palette = np.zeros((self.num_colors, 1, 3), dtype=np.uint8)
+        hsv_palette[:, 0, 0] = np.linspace(0, 180, self.num_colors, endpoint=False)
+        hsv_palette[:, :, 1:] = 255
+        bgr_palette = cv2.cvtColor(hsv_palette, cv2.COLOR_HSV2BGR)
+        return bgr_palette.reshape(-1, 3)
+
+    def __call__(self, class_id):
+        color = tuple(map(int, self.color_palette[class_id]))
+        return color
+
+class ObjectDetection:
+    def __init__(self, model_weights="yolov8n.pt", capture_index=0):
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print("Using Device: ", self.device)
+        self.model = self.load_model(model_weights)
+        self.classes = self.model.names
+        self.classes[0] = 'esophagus cancer'
+        #self.classes = ['polyp','esophagus cancer']
+        self.colors = Colors(len(self.classes))
+        self.font = cv2.FONT_HERSHEY_SIMPLEX
+        self.capture_index = capture_index
+        self.cap = self.load_capture()
+
+        reid_weights = Path("osnet_x0_25_msmt17.pt")
+                                                  # lmbn_n_cuhk03_d.pt               # lightweight
+                                                  #  osnet_x0_25_market1501.pt
+                                                  #  mobilenetv2_x1_4_msmt17.engine
+                                                  #  resnet50_msmt17.onnx
+                                                  #  osnet_x1_0_msmt17.pt
+                                                  #  clip_market1501.pt               # heavy
+                                                  #  clip_vehicleid.pt
+
+        self.tracker = StrongSORT(reid_weights,
+                                  torch.device(self.device),
+                                  fp16 = False,
+                                  )
+
+    def load_model(self, weights):
+        model = YOLO(weights)
+        model.fuse()
+        return model
+
+    def predict(self, frame):
+        results = self.model(frame, stream=True, verbose=False, conf=0.85, line_width=1)
+        return results
+
+    
+
+    def draw_tracks(self, frame, tracks, txt_file):
+        for track in tracks:
+            x1, y1, x2, y2 = int(track[0]), int(track[1]), int(track[2]), int(track[3])
+            id = int(track[4])
+            conf = round(track[5], 2)
+            class_id = int(track[6])
+            class_name = self.classes[class_id]
+            cv2.rectangle(frame, (x1,y1), (x2, y2), self.colors(class_id), 5)
+            label = f'{class_name} {conf}'
+            (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+            cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
+            cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 5)
+            # Ghi kết quả vào file txt
+            txt_file.write(f"{int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))}, {id}, {x1}, {y1}, {x2-x1}, {y2-y1}, {conf}, -1, -1, -1\n")
+        return frame
+
+
+    def load_capture(self):
+        cap = cv2.VideoCapture(self.capture_index)
+        assert cap.isOpened()
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        filename = f'strongsort.mp4'
+        self.writer = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+        return cap
+
+    def write_seqinfo_ini(self, seq_name, seq_length, frame_rate, im_width, im_height, im_ext, im_dir):
+        with open("seqinfo.ini", "w") as f:
+            f.write("[Sequence]\n")
+            f.write(f"name={seq_name}\n")
+            f.write(f"imDir={im_dir}\n")  # Thay thế bằng thư mục chứa ảnh nếu cần
+            f.write(f"frameRate={frame_rate}\n")
+            f.write(f"seqLength={seq_length}\n")
+            f.write(f"imWidth={im_width}\n")
+            f.write(f"imHeight={im_height}\n")
+            f.write(f"imExt={im_ext}\n")
+
+
+    def __call__(self):
+        tracker = self.tracker
+
+
+        # Lấy thông tin từ video kết quả
+        seq_name = "StrongSort"
+        im_dir="img1"
+        seq_length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_rate = self.cap.get(cv2.CAP_PROP_FPS)
+        im_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        im_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        im_ext = ".jpg"  # Phần mở rộng của ảnh
+
+        # Ghi thông tin vào file seqinfo.ini
+        self.write_seqinfo_ini(seq_name, seq_length, frame_rate, im_width, im_height, im_ext, im_dir)
+
+        # Mở file txt để ghi kết quả
+        with open("results.txt", "w") as txt_file:
+          while True:
+              start_time = perf_counter()
+              ret, frame = self.cap.read()
+              if not ret:
+                  break
+              cv2.rectangle(frame, (0,30), (220,80), (255,255,255),-1 )
+              detections = self.predict(frame)
+              for dets in detections:
+                  tracks = tracker.update(dets.boxes.data.to("cpu").numpy(), frame)
+                  if len(tracks.shape) == 2 and tracks.shape[1] == 8:
+                      frame = self.draw_tracks(frame, tracks, txt_file)
+              end_time = perf_counter()
+              fps = 1/np.round(end_time - start_time, 2)
+              cv2.putText(frame, f'FPS: {int(fps)}', (20,70), self.font, 1.5, (0,255,0), 5)
+              self.writer.write(frame)
+
+              print(detections)
+              cv2_imshow(frame)
+
+              if cv2.waitKey(5) & 0xFF == 27:
+                  break
+          self.cap.release()
+          self.writer.release()
+          cv2.destroyAllWindows()
+
+test_vid = "/content/BVK042.mp4"
+model_weights = "/content/daday.pt"
+detector = ObjectDetection(model_weights, test_vid)
+detector()
