@@ -11,14 +11,14 @@ from pathlib import Path
 # import pandas as pd
 # from google.colab.patches import cv2_imshow
 
-test_vid = "drama.mp4"
-model_weights = "model_yolo/yolov8x.pt"
+test_vid = "D:/DANC/testtttt/drama.mp4"
+model_weights = "D:/DANC/testtttt/model_yolo/yolov8x.pt"
 
 model_name_dict = {
-    "model_yolo/thucquan.pt": '_TQ',
-    "model_yolo/daday.pt": '_DD',
-    "model_yolo/htt.pt": '_HTT',
-    "model_yolo/yolov8x.pt": '_Y8x'
+    "D:/DANC/testtttt/model_yolo/thucquan.pt": '_TQ',
+    "D:/DANC/testtttt/model_yolo/daday.pt": '_DD',
+    "D:/DANC/testtttt/model_yolo/htt.pt": '_HTT',
+    "D:/DANC/testtttt/model_yolo/yolov8x.pt": '_Y8x'
 }
 # Lấy tên file video từ test_vid
 #input_video_name = test_vid.split("/")[-1].split(".")[0] + model_name_dict.get(model_weights, ['polyp', 'esophagael cancer'])
@@ -26,10 +26,10 @@ input_video_name = 'CS201'
 
 # Tạo từ điển ánh xạ giữa tên model_weights và model_classes
 model_classes_dict = {
-    "model_yolo/thucquan.pt": ['2_Viem_thuc_quan', '5_Ung_thu_thuc_quan'],
-    "model_yolo/daday.pt": ['3_Viem_da_day_HP_am', '4_Viem_da_day_HP_duong', '6_Ung_thu_da_day'],
-    "model_yolo/htt.pt": ['7_Loet_HTT'],
-    "model_yolo/yolov8x.pt": ['person',	 'bicycle',	 'car',	 'motorcycle',	 'airplane',	 'bus',	 'train',	 'truck',	 'boat',	 'traffic light',	 'fire hydrant',	 'stop sign',	 'parking meter',	 'bench',	 'bird',	 'cat',	 'dog',	 'horse',	 'sheep',	 'cow',	 'elephant',	 'bear',	 'zebra',	 'giraffe',	 'backpack',	 'umbrella',	 'handbag',	 'tie',	 'suitcase',	 'frisbee',	 'skis',	 'snowboard',	 'sports ball',	 'kite',	 'baseball bat',	 'baseball glove',	 'skateboard',	 'surfboard',	 'tennis racket',	 'bottle',	 'wine glass',	 'cup',	 'fork',	 'knife',	 'spoon',	 'bowl',	 'banana',	 'apple',	 'sandwich',	 'orange',	 'broccoli',	 'carrot',	 'hot dog',	 'pizza',	 'donut',	 'cake',	 'chair',	 'couch',	 'potted plant',	 'bed',	 'dining table',	 'toilet',	 'tv', 'laptop',  'mouse',  'remote',  'keyboard',  'cell phone',  'microwave',  'oven',  'toaster',  'sink',  'refrigerator',  'book',  'clock',  'vase',  'scissors',  'teddy bear',  'hair drier',  'toothbrush' ]
+    "D:/DANC/testtttt/model_yolo/thucquan.pt": ['2_Viem_thuc_quan', '5_Ung_thu_thuc_quan'],
+    "D:/DANC/testtttt/model_yolo/daday.pt": ['3_Viem_da_day_HP_am', '4_Viem_da_day_HP_duong', '6_Ung_thu_da_day'],
+    "D:/DANC/testtttt/model_yolo/htt.pt": ['7_Loet_HTT'],
+    "D:/DANC/testtttt/model_yolo/yolov8x.pt": ['person',	 'bicycle',	 'car',	 'motorcycle',	 'airplane',	 'bus',	 'train',	 'truck',	 'boat',	 'traffic light',	 'fire hydrant',	 'stop sign',	 'parking meter',	 'bench',	 'bird',	 'cat',	 'dog',	 'horse',	 'sheep',	 'cow',	 'elephant',	 'bear',	 'zebra',	 'giraffe',	 'backpack',	 'umbrella',	 'handbag',	 'tie',	 'suitcase',	 'frisbee',	 'skis',	 'snowboard',	 'sports ball',	 'kite',	 'baseball bat',	 'baseball glove',	 'skateboard',	 'surfboard',	 'tennis racket',	 'bottle',	 'wine glass',	 'cup',	 'fork',	 'knife',	 'spoon',	 'bowl',	 'banana',	 'apple',	 'sandwich',	 'orange',	 'broccoli',	 'carrot',	 'hot dog',	 'pizza',	 'donut',	 'cake',	 'chair',	 'couch',	 'potted plant',	 'bed',	 'dining table',	 'toilet',	 'tv', 'laptop',  'mouse',  'remote',  'keyboard',  'cell phone',  'microwave',  'oven',  'toaster',  'sink',  'refrigerator',  'book',  'clock',  'vase',  'scissors',  'teddy bear',  'hair drier',  'toothbrush' ]
 }
 
 # Thiết lập model_classes từ từ điển, nếu không khớp thì trả về ['polyp', 'esophagael cancer']
