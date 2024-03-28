@@ -4,7 +4,8 @@ test_vid = "/content/UTTQ/CS101.mp4"
 # Lấy tên file video từ test_vid
 input_video_name = test_vid.split("/")[-1].split(".")[0] + '_' + test_vid.split("/")[-2].split(".")[0]
 
-vid_utdd_uttq = [['BVK019', 'BVK022', 'BVK024', 'BVK029', 'BVK042', 'BVK066'], ['CS101', 'CS201', 'BVK037', 'BVK040', 'BVK083', 'BVK091']]
+vid_utdd_uttq = [['BVK019', 'BVK022', 'BVK024', 'BVK029', 'BVK042', 'BVK066'], #dd
+                 ['CS101', 'CS201', 'BVK037', 'BVK040', 'BVK083', 'BVK091']] #tq
 
 
 

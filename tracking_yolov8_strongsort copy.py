@@ -11,18 +11,33 @@ from pathlib import Path
 # import pandas as pd
 # from google.colab.patches import cv2_imshow
 
-test_vid = "D:/DANC/testtttt/drama.mp4"
-model_weights = "D:/DANC/testtttt/model_yolo/yolov8x.pt"
+vid_utdd_uttq = [['BVK019', 'BVK022', 'BVK024', 'BVK029', 'BVK042', 'BVK066'], #dd
+                 ['CS101', 'CS201', 'BVK037', 'BVK040', 'BVK083', 'BVK091']] #tq
 
-model_name_dict = {
-    "D:/DANC/testtttt/model_yolo/thucquan.pt": '_TQ',
-    "D:/DANC/testtttt/model_yolo/daday.pt": '_DD',
-    "D:/DANC/testtttt/model_yolo/htt.pt": '_HTT',
-    "D:/DANC/testtttt/model_yolo/yolov8x.pt": '_Y8x'
+name = 'CS201'
+
+if name in vid_utdd_uttq[0]:  # Kiểm tra xem name có trong chiều 1 không
+    test_vid = "/content/UTDD/" + name + ".mp4"
+    model_weights = "/content/daday.pt"
+else:
+    test_vid = "/content/UTTQ/" + name + ".mp4"
+    model_weights = "/content/thucquan.pt"
+
+
+
+input_video_name = test_vid.split("/")[-2].split(".")[0] + '_' + test_vid.split("/")[-1].split(".")[0]
+
+
+# Tạo từ điển ánh xạ giữa tên model_weights và model_classes
+model_classes_dict = {
+    "/content/thucquan.pt": ['2_Viem_thuc_quan', '5_Ung_thu_thuc_quan'],
+    "/content/daday.pt": ['3_Viem_da_day_HP_am', '4_Viem_da_day_HP_duong', '6_Ung_thu_da_day'],
+    "/content/htt.pt": ['7_Loet_HTT']
 }
-# Lấy tên file video từ test_vid
-#input_video_name = test_vid.split("/")[-1].split(".")[0] + model_name_dict.get(model_weights, ['polyp', 'esophagael cancer'])
-input_video_name = 'CS201'
+
+# Thiết lập model_classes từ từ điển, nếu không khớp thì trả về ['polyp', 'esophagael cancer']
+model_classes = model_classes_dict.get(model_weights, ['polyp', 'esophagael cancer'])
+
 
 # Tạo từ điển ánh xạ giữa tên model_weights và model_classes
 model_classes_dict = {
@@ -85,47 +100,21 @@ class ObjectDetection:
         return results
 
     def draw_tracks(self, frame, tracks, txt_file, overlap_threshold=0.5):
-      # Tạo một danh sách để lưu trữ các bounding box duy nhất sau khi loại bỏ trùng lặp
-      unique_boxes = []
+        for track in tracks:
+            x1, y1, x2, y2 = int(track[0]), int(track[1]), int(track[2]), int(track[3])
+            id = int(track[4])
+            conf = round(track[5], 2)
+            class_id = int(track[6])
+            class_name = self.classes[class_id]
+            cv2.rectangle(frame, (x1,y1), (x2, y2), self.colors(class_id), 3)
+            label = f'{class_name} {id} {conf}' # hiển thị
+            (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 1.5, 3)
+            cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
+            cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 3)
+            # Ghi kết quả vào file txt
+            txt_file.write(f"{int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))},{id},{x1},{y1},{x2-x1},{y2-y1},{conf},-1,-1,-1\n")
 
-      for track in tracks:
-          x1, y1, x2, y2 = int(track[0]), int(track[1]), int(track[2]), int(track[3])
-          id = int(track[4])
-          conf = round(track[5], 2)
-          class_id = int(track[6])
-
-          # Tính diện tích của bounding box hiện tại
-          area_current = (x2 - x1) * (y2 - y1)
-
-          # Kiểm tra các bounding box đã tồn tại trong danh sách unique_boxes
-          is_unique = True
-          for box in unique_boxes:
-              x1_prev, y1_prev, x2_prev, y2_prev = box
-              # Tính diện tích chồng lấp giữa bounding box hiện tại và bounding box trong danh sách
-              x_overlap = max(0, min(x2, x2_prev) - max(x1, x1_prev))
-              y_overlap = max(0, min(y2, y2_prev) - max(y1, y1_prev))
-              area_overlap = x_overlap * y_overlap
-              area_union = area_current + (x2_prev - x1_prev) * (y2_prev - y1_prev) - area_overlap
-              overlap_ratio = area_overlap / area_union
-
-              # Nếu diện tích chồng lấp vượt qua ngưỡng trùng lặp, đánh dấu bounding box hiện tại không duy nhất
-              if overlap_ratio > overlap_threshold:
-                  is_unique = False
-                  break
-
-          # Nếu bounding box là duy nhất, thêm vào danh sách unique_boxes và vẽ lên frame
-          if is_unique:
-              unique_boxes.append((x1, y1, x2, y2))
-              class_name = self.classes[class_id]
-              cv2.rectangle(frame, (x1,y1), (x2, y2), self.colors(class_id), 5)
-              label = f'{class_name} {conf}' # hiển thị
-              (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 1.5, 5)
-              cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
-              cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 5)
-              # Ghi kết quả vào file txt
-              txt_file.write(f"{int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))},{id},{x1},{y1},{x2-x1},{y2-y1},{conf},-1,-1,-1\n")
-
-      return frame
+        return frame
 
 
     def load_capture(self):
