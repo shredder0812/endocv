@@ -1,2 +1,2 @@
 ultralytics
-boxmot==10.0.51
+boxmot

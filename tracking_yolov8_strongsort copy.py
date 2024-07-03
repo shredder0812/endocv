@@ -109,8 +109,13 @@ class ObjectDetection:
             cv2.rectangle(frame, (x1,y1), (x2, y2), self.colors(class_id), 3)
             label = f'{class_name} {id} {conf}' # hiển thị
             (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 1.5, 3)
-            cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
-            cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 3)
+            # cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
+            # cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 3)
+            #cv2.rectangle(image, start_point, end_point, color, thickness)
+            #cv2.putText(image, text, org, font, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]])
+            cv2.rectangle(frame, (x1, y1-h+15), (x1+w, y1), self.colors(class_id), -1)
+            cv2.putText(frame, label, (x1,y1+10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 3)
+            
             # Ghi kết quả vào file txt
             txt_file.write(f"{int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))},{id},{x1},{y1},{x2-x1},{y2-y1},{conf},-1,-1,-1\n")
 

@@ -1,2 +1,8 @@
-https://drive.google.com/file/d/10ummHf6uND4kbkFetnEaJtbZmwP7Rpj0/view?usp=sharing
-https://drive.google.com/file/d/11dJMyUdK1seKUByCT1cU8Gs5dhmNAv8N/view?usp=sharing
+Links 
+(you need to create shortcuts of those folders in your MyDrive)
+torchreid_model: https://drive.google.com/drive/folders/1Uzd3QbE8KU1SOcnsHriLNuQAJF-51iGi?usp=sharing
+ENDOCV: https://drive.google.com/drive/folders/1Shpg_H-cWa_T-PMUVPZcwct0hk7iQPaw?usp=sharing
+video_test: https://drive.google.com/drive/folders/19UQTSzTU6KX4GyopKGcz-vaBG7wnpOWB?usp=sharing
+video_CS: https://drive.google.com/drive/folders/1iuc_rvDoGqfUxEmI8MKI7Jfc2W6Jk1Jx?usp=sharing
+data_pk: https://drive.google.com/drive/folders/1hBQzMiC24P9zdUs_yd-50OxmlRIp2wNU?usp=sharing
+endocv: https://drive.google.com/drive/folders/1mz2qudbWYfzTEU17OpDwk988_pGOgSZz?usp=sharing

@@ -11,8 +11,8 @@ from pathlib import Path
 # import pandas as pd
 # from google.colab.patches import cv2_imshow
 
-test_vid = "D:/DANC/testtttt/drama.mp4"
-model_weights = "D:/DANC/testtttt/model_yolo/yolov8x.pt"
+test_vid = "Daday_3.mp4"
+model_weights = "D:/DANC/testtttt/model_yolo/thucquan.pt"
 
 model_name_dict = {
     "D:/DANC/testtttt/model_yolo/thucquan.pt": '_TQ',
@@ -111,8 +111,12 @@ class ObjectDetection:
             cv2.rectangle(frame, (x1,y1), (x2, y2), self.colors(class_id), 2)
             label = f'{id} {class_name} {conf}' # hiển thị
             (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
-            cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
-            cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255) , 2)
+            # cv2.rectangle(frame, (x1, y1-h-15), (x1+w, y1), self.colors(class_id), -1)
+            # cv2.putText(frame, label, (x1,y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 3)
+            #cv2.rectangle(image, start_point, end_point, color, thickness)
+            #cv2.putText(image, text, org, font, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]])
+            cv2.rectangle(frame, (x1, y1+h+35), (x1+w+w+w, y1), self.colors(class_id), -1)
+            cv2.putText(frame, label, (x1,y1+37), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255) , 3)
             # Ghi kết quả vào file txt
             txt_file.write(f"{int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))}, {id}, {x1}, {y1}, {x2-x1}, {y2-y1}, {conf}, -1, -1, -1\n")
 
